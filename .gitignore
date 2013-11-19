@@ -34,3 +34,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.*.swp
+repos
+history.sqlite
+ccm.ini
