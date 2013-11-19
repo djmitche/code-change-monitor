@@ -20,16 +20,23 @@ def main():
     ], set()))
     repos.sort()
 
+    def pm(tup):
+        return "<span class='plus'>+%s</span>/<span class='minus'>-%s</span>" % tup
+
     def add(tup1, tup2):
         return tup1[0]+tup2[0], tup1[1]+tup2[1]
 
     start_date = time.asctime(time.localtime(time.time() - args.days*3600*24))
     end_date = time.asctime(time.localtime(time.time()))
-    print "<html><head><title>Code Changes by User and Repo</title></head>"
+    print "<html><head>"
+    print "<title>Code Changes by User and Repo</title>"
+    print "<style>span.plus { color: green; }</style>"
+    print "<style>span.minus { color: red; }</style>"
+    print "</head>"
     print "<body>"
     print "<h1>Code Changes by User and Repo</h1>"
     print "<h2>From %s to %s</h2>" % (start_date, end_date)
-    print "<table>"
+    print "<table border='1'>"
     print "<tr><th>user</th>"
     for repo in repos:
         print " <th>%s</th>" % repo
@@ -45,16 +52,16 @@ def main():
                 total = add(total, count)
                 total_per_repo[repo] = \
                     add(total_per_repo.get(repo, (0,0)), count)
-                count = '+%s/-%s' % count
+                count = pm(count)
             else:
                 count = ''
             print " <td>%s</td>" % count
-        print " <td>+%s/-%s</td>" % total
+        print " <td>%s</td>" % pm(total)
         print "</tr>"
     print "<tr><th>total</th>"
     for repo in repos:
-        print " <th>+%s/-%s</th>" % total_per_repo[repo]
-    print " <th>+%s/-%s</th>" % reduce(add, total_per_repo.values(), (0,0))
+        print " <th>%s</th>" % pm(total_per_repo[repo])
+    print " <th>%s</th>" % pm(reduce(add, total_per_repo.values(), (0,0)))
     print "</tr>"
     print "</table>"
     print "</body>"
