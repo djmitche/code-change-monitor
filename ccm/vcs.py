@@ -58,7 +58,7 @@ class Git(Repository):
         out = out.split('\n')
 
         hash_re = re.compile(r'^([a-z0-9]{40}) (\d+) ([^ ]+)')
-        shortstat_re = re.compile(r'\s*\d+ files changed(, (\d+) insertions...)?(, (\d+) deletions...)?')
+        shortstat_re = re.compile(r'\s*\d+ files? changed(, (\d+) insertions?...)?(, (\d+) deletions?...)?')
         rv = []
         while out:
             line = out.pop(0)
