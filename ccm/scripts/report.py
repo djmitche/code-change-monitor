@@ -22,8 +22,8 @@ def main():
         parser.add_argument('--email-to', help='email recipient address',
                 action='append')
     db, logger, parser, args, cfg = ccm.scripts.base.set_up(
-            'ccm-reports',
-            'Generate reports',
+            'ccm-report',
+            'Generate a report',
             extra_args)
 
     since = datetime.date.today() - datetime.timedelta(days=args.days)

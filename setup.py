@@ -16,6 +16,6 @@ setup(
     [console_scripts]
         ccm-update = ccm.scripts.update:main
         ccm-users = ccm.scripts.users:main
-        ccm-reports = ccm.scripts.reports:main
+        ccm-report = ccm.scripts.report:main
     """,
 )
