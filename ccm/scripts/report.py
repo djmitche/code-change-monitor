@@ -17,10 +17,6 @@ def main():
                 default=1)
         parser.add_argument('--format', help='report format',
                 default='html', choices=('html', 'csv', 'email'))
-        parser.add_argument('--email-from', help='email sender address',
-                default='nobody@mozilla.org')
-        parser.add_argument('--email-to', help='email recipient address',
-                action='append')
     db, logger, parser, args, cfg = ccm.scripts.base.set_up(
             'ccm-report',
             'Generate a report',
@@ -47,14 +43,14 @@ def main():
         'csv': output_csv,
         'email': output_email,
     }[args.format]
-    output_fn(grid, users, repos, since, parser, args, sys.stdout)
+    output_fn(grid, users, repos, since, parser, args, cfg, sys.stdout)
 
 def grid_sum(cells):
     def add(tup1, tup2):
         return tup1[0]+tup2[0], tup1[1]+tup2[1]
     return reduce(add, cells, (0,0))
 
-def output_html(grid, users, repos, since, parser, args, outfile):
+def output_html(grid, users, repos, since, parser, args, cfg, outfile):
     def pm(tup):
         if tup[0] == tup[1] == 0:
             return ''
@@ -90,7 +86,7 @@ def output_html(grid, users, repos, since, parser, args, outfile):
     print >>outfile, "</body>"
     print >>outfile, "</html>"
 
-def output_csv(grid, users, repos, since, parser, args, outfile):
+def output_csv(grid, users, repos, since, parser, args, cfg, outfile):
     w = csv.writer(outfile)
     def flatten(l):
         return itertools.chain.from_iterable(l)
@@ -100,21 +96,21 @@ def output_csv(grid, users, repos, since, parser, args, outfile):
     for user, row in itertools.izip(users, grid):
         w.writerow([user] + list(flatten(row)))
 
-def output_email(grid, users, repos, since, parser, args, oufile):
-    if not args.email_to:
-        parser.error('Add --email-to')
+def output_email(grid, users, repos, since, parser, args, cfg, oufile):
+    email_from = cfg.get('reports', 'email-from')
+    email_to = cfg.get('reports', 'email-to').split()
     f = cStringIO.StringIO()
-    output_csv(grid, users, repos, since, parser, args, f)
+    output_csv(grid, users, repos, since, parser, args, cfg, f)
     csv_data = f.getvalue()
 
     f = cStringIO.StringIO()
-    output_html(grid, users, repos, since, parser, args, f)
+    output_html(grid, users, repos, since, parser, args, cfg, f)
     html_data = f.getvalue()
 
     msg = MIMEMultipart()
     msg['Subject'] = "Code Changed since %s" % since
-    msg['From'] = args.email_from
-    msg['To'] = ', '.join(args.email_to)
+    msg['From'] = email_from
+    msg['To'] = ', '.join(email_to)
 
     msg.attach(MIMEText(html_data, 'html'))
 
@@ -126,5 +122,5 @@ def output_email(grid, users, repos, since, parser, args, oufile):
     s = smtplib.SMTP('localhost')
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.
-    s.sendmail(args.email_from, args.email_to, msg.as_string())
+    s.sendmail(email_from, email_to, msg.as_string())
     s.quit()

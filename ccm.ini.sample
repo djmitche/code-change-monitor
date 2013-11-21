@@ -4,6 +4,12 @@ basedir: .
 # and a DB to keep state - see http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html#database-urls
 db: sqlite:///history.sqlite
 
+[reports]
+# sender address for emails
+email-from: ..
+# space-separated recipient addresses for emails
+email-to: ..
+
 [git]
 # Configure the git repositories to monitor.  The format is
 # name: clone-URL
