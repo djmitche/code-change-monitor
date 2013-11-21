@@ -14,3 +14,7 @@ email-to: ..
 # Configure the git repositories to monitor.  The format is
 # name: clone-URL
 ccm: https://github.com/djmitche/code-change-monitor
+
+[svn]
+# similarly, configure each SVN repository here
+foo: http://svn.example.com/foo

@@ -1,8 +1,10 @@
+import time
 import abc
 import logging
 import subprocess
 import re
 import os
+from xml.dom import minidom
 
 class Rev(object):
 
@@ -75,6 +77,41 @@ class Git(Repository):
         return rv
 
 
+class SVN(Repository):
+
+    def update(self):
+        # we do all svn operations remotely, so there's nothing to clone
+        pass
+
+    def enumerate_recent_revisions(self, days):
+        self.logger.info('enumerating revisions from the last %d days' % days)
+        out = subprocess.check_output(['svn', 'log', '--xml',
+            '-r', '{%d days ago}:HEAD' % days, self.url])
+        xml = minidom.parseString(out)
+        entries = xml.getElementsByTagName("logentry")
+        rv = []
+        for e in entries:
+            r = Rev()
+            rv.append(r)
+            r.revision = e.getAttribute('revision')
+            r.author = e.getElementsByTagName("author")[0].firstChild.nodeValue
+            date = e.getElementsByTagName("date")[0].firstChild.nodeValue
+            r.when = time.mktime(time.strptime(date, '%Y-%m-%dT%H:%M:%S.%fZ'))
+
+            diff = subprocess.check_output(['svn', 'diff', '-c', r.revision, self.url])
+            first_chars = [l[0] for l in diff.split('\n') if l]
+
+            # '=' lines begin each file, followed by '+++' and '---' which don't count as
+            # changed lines, so we'll subtract those out
+            equals = first_chars.count('=')
+            plus = first_chars.count('+')
+            minus = first_chars.count('-')
+            r.added = plus - equals
+            r.removed = minus - equals
+
+        return rv
+
+
 def load_all(cfg):
     basedir = cfg.get('main', 'basedir')
     repos = os.path.join(basedir, 'repos')
@@ -84,3 +121,6 @@ def load_all(cfg):
     for name, url in cfg.items('git'):
         path = os.path.join(basedir, 'repos', name)
         yield Git(name, url, path)
+    for name, url in cfg.items('svn'):
+        path = os.path.join(basedir, 'repos', name)
+        yield SVN(name, url, path)
