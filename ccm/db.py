@@ -144,8 +144,7 @@ class DB(object):
         except sqlalchemy.exc.IntegrityError:
             pass
 
-    def changes_by_user_repo(self, days_back):
-        since = time.time() - days_back*3600*24
+    def changes_by_user_repo(self, since):
         fields = [
             revisions.c.repoid, revisions.c.author,
             sa.func.sum(revisions.c.lines_added).label('lines_added'),
