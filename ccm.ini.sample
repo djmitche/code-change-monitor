@@ -1,0 +1,10 @@
+[main]
+# specify a directory under which the tool can clone repositories
+basedir: .
+# and a DB to keep state - see http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html#database-urls
+db: sqlite:///history.sqlite
+
+[git]
+# Configure the git repositories to monitor.  The format is
+# name: clone-URL
+ccm: https://github.com/djmitche/code-change-monitor
