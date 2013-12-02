@@ -7,7 +7,7 @@ setup(
     author='Dustin J. Mitchell',
     author_email='dustin@mozilla.com',
     url='http://github.com/djmitche/code-change-monitor',
-    install_requires=['sqlalchemy'],
+    install_requires=['sqlalchemy', 'approxidate'],
     tests_require=["nose", "mock"],
     packages=find_packages(),
     include_package_data=True,

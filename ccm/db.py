@@ -144,7 +144,7 @@ class DB(object):
         except sqlalchemy.exc.IntegrityError:
             pass
 
-    def changes_by_user_repo(self, since):
+    def changes_by_user_repo(self, start, end):
         fields = [
             revisions.c.repoid, revisions.c.author,
             sa.func.sum(revisions.c.lines_added).label('lines_added'),
@@ -152,7 +152,8 @@ class DB(object):
         ]
         q = sa.select(fields)
         q = q.group_by(revisions.c.repoid, revisions.c.author)
-        q = q.where(revisions.c.when > since)
+        q = q.where(revisions.c.when > start)
+        q = q.where(revisions.c.when < end)
         res = self.conn.execute(q)
 
         # now translate userids to canonical userids, and repos to names,
