@@ -4,6 +4,7 @@ import logging
 import subprocess
 import re
 import os
+import ccm.util
 from xml.dom import minidom
 
 class Rev(object):
@@ -52,9 +53,11 @@ class Git(Repository):
             subprocess.check_call(['git', 'pull', '--quiet'],
                 cwd=self.local_path)
 
-    def enumerate_recent_revisions(self, days):
-        self.logger.info('enumerating revisions from the last %d days' % days)
-        out = subprocess.check_output(['git', 'log', '--since', '%d days' % days,
+    def enumerate_recent_revisions(self, start_day, end_day):
+        self.logger.info('enumerating revisions from %s through %s' %
+                (ccm.util.to_date(start_day), ccm.util.to_date(end_day)))
+        out = subprocess.check_output(['git', 'log',
+                                       '--since', str(start_day), '--until', str(end_day),
                                        '--format=format:%H %ct %aE', '--shortstat'],
             cwd=self.local_path)
         out = out.split('\n')
@@ -83,10 +86,13 @@ class SVN(Repository):
         # we do all svn operations remotely, so there's nothing to clone
         pass
 
-    def enumerate_recent_revisions(self, days):
-        self.logger.info('enumerating revisions from the last %d days' % days)
+    def enumerate_recent_revisions(self, start_day, end_day):
+        self.logger.info('enumerating revisions from %s through %s' %
+                (ccm.util.to_date(start_day), ccm.util.to_date(end_day)))
+        start_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_day))
+        end_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(end_day))
         out = subprocess.check_output(['svn', 'log', '--xml',
-            '-r', '{%d days ago}:HEAD' % days, self.url])
+            '-r', '{%s}:{%s}' % (start_str, end_str), self.url])
         xml = minidom.parseString(out)
         entries = xml.getElementsByTagName("logentry")
         rv = []

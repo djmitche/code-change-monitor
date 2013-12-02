@@ -1,34 +1,20 @@
 import time
 import sys
 import csv
-import calendar
 import itertools
 import datetime
 import ccm.vcs
 import cStringIO
 import ccm.scripts.base
-import approxidate
 import smtplib
+import ccm.util
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
 def main():
     def extra_args(parser):
-        def datearg(str):
-            # return midnight, UTC, of the given date
-            ts = approxidate.approx(str)
-            tup = time.gmtime(ts)
-            return calendar.timegm((tup[0], tup[1], tup[2], 0, 0, 0, 0, 0, 0))
-        def datearg_plus(str):
-            # return the end of the given day
-            return datearg(str) + 3600*24-1
-        parser.add_argument('--days', metavar='DAYS',
-                type=int, help='number of days over which to report (equivalent to --start and --end)')
-        parser.add_argument('--start',
-                type=datearg, help='first date of report')
-        parser.add_argument('--end',
-                type=datearg_plus, help='last date of report')
+        ccm.util.add_args_days_start_end(parser)
         parser.add_argument('--format', help='report format',
                 default='html', choices=('html', 'csv', 'email'))
     db, logger, parser, args, cfg = ccm.scripts.base.set_up(
@@ -36,18 +22,7 @@ def main():
             'Generate a report',
             extra_args)
 
-    if args.days is None and args.start is None:
-        args.days = 1
-    if args.start is not None:
-        if args.days is not None:
-            parser.error("specify either --days or --start, not both")
-    else:
-        start = datetime.date.today() - datetime.timedelta(days=args.days)
-        args.start = calendar.timegm(datetime.datetime.combine(start, datetime.datetime.min.time()).utctimetuple())
-
-    if args.end is None:
-        # end now
-        args.end = time.time()
+    ccm.util.handle_args_days_start_end(parser, args)
 
     # generate an actual rectangular array of data, along with row and column
     # titles
@@ -68,9 +43,6 @@ def main():
     }[args.format]
     output_fn(grid, users, repos, parser, args, cfg, sys.stdout)
 
-def to_date(timestamp):
-    return time.strftime('%Y-%m-%d', time.gmtime(timestamp))
-
 def grid_sum(cells):
     def add(tup1, tup2):
         return tup1[0]+tup2[0], tup1[1]+tup2[1]
@@ -89,7 +61,7 @@ def output_html(grid, users, repos, parser, args, cfg, outfile):
     print >>outfile, "</head>"
     print >>outfile, "<body>"
     print >>outfile, "<h1>Code Changes by User and Repo</h1>"
-    print >>outfile, "<h2>From %s through %s</h2>" % (to_date(args.start), to_date(args.end))
+    print >>outfile, "<h2>From %s through %s</h2>" % (ccm.util.to_date(args.start), ccm.util.to_date(args.end))
     print >>outfile, "<table border='1'>"
     print >>outfile, "<tr><th>user</th>"
     for repo in repos:
@@ -115,7 +87,7 @@ def output_csv(grid, users, repos, parser, args, cfg, outfile):
     w = csv.writer(outfile)
     def flatten(l):
         return itertools.chain.from_iterable(l)
-    w.writerow(['%s through %s' % (to_date(args.start), to_date(args.end))]
+    w.writerow(['%s through %s' % (ccm.util.to_date(args.start), ccm.util.to_date(args.end))]
             + list(flatten(('+'+r, '-'+r) for r in repos)))
 
     for user, row in itertools.izip(users, grid):
@@ -133,7 +105,7 @@ def output_email(grid, users, repos, parser, args, cfg, oufile):
     html_data = f.getvalue()
 
     msg = MIMEMultipart()
-    msg['Subject'] = "Code Changed %s through %s" % (to_date(args.start), to_date(args.end))
+    msg['Subject'] = "Code Changed %s through %s" % (ccm.util.to_date(args.start), ccm.util.to_date(args.end))
     msg['From'] = email_from
     msg['To'] = ', '.join(email_to)
 
