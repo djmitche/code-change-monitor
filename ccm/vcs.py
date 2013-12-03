@@ -56,8 +56,10 @@ class Git(Repository):
     def enumerate_recent_revisions(self, start_day, end_day):
         self.logger.info('enumerating revisions from %s through %s' %
                 (ccm.util.to_date(start_day), ccm.util.to_date(end_day)))
+        start_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_day))
+        end_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(end_day))
         out = subprocess.check_output(['git', 'log',
-                                       '--since', str(start_day), '--until', str(end_day),
+                                       '--since', start_str, '--until', end_str,
                                        '--format=format:%H %ct %aE', '--shortstat'],
             cwd=self.local_path)
         out = out.split('\n')
