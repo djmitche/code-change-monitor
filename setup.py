@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='code-change-monitor',
-    version='0.1',
+    version='0.1+',
     description='Simple tool to count changes per developer in version control systems',
     author='Dustin J. Mitchell',
     author_email='dustin@mozilla.com',
