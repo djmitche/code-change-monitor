@@ -28,7 +28,7 @@ This should install a number of packages from pypi and finish successfully.
 ### Configuration
 
 Copy https://raw.github.com/djmitche/code-change-monitor/master/ccm.ini.sample to `ccm.ini`
-Edit the `[git]  and `[svn]` sections to reflect the repositories you want to monitor.
+Edit the `[git]` and `[svn]` sections to reflect the repositories you want to monitor.
 
 ### Usage
 
