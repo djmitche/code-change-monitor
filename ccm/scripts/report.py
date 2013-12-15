@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 
 def main():
     def extra_args(parser):
-        ccm.util.add_args_days_start_end(parser)
+        ccm.scripts.base.add_args_days_start_end(parser)
         parser.add_argument('--format', help='report format',
                 default='html', choices=('html', 'csv', 'email'))
     db, logger, parser, args, cfg = ccm.scripts.base.set_up(
@@ -22,7 +22,7 @@ def main():
             'Generate a report',
             extra_args)
 
-    ccm.util.handle_args_days_start_end(parser, args)
+    ccm.scripts.base.handle_args_days_start_end(parser, args)
 
     # generate an actual rectangular array of data, along with row and column
     # titles

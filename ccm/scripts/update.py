@@ -6,13 +6,13 @@ def main():
     def extra_args(parser):
         parser.add_argument('--repository',
                 help='repository to scan; defaults to all')
-        ccm.util.add_args_days_start_end(parser)
+        ccm.scripts.base.add_args_days_start_end(parser)
     db, logger, parser, args, cfg = ccm.scripts.base.set_up(
             'ccm-update',
             'Update version-control repositories',
             extra_args)
 
-    ccm.util.handle_args_days_start_end(parser, args)
+    ccm.scripts.base.handle_args_days_start_end(parser, args)
 
     for repo in ccm.vcs.load_all(cfg):
         if args.repository and repo.name != args.repository:
